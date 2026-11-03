@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f3a5f">
+<title>九州 温泉手帖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --kinari: #f5efe0;
+  --washi: #fbf7ec;
+  --ai: #1f3a5f;
+  --ai-deep: #152a45;
+  --shu: #c8452e;
+  --sumi: #2b2622;
+  --nezu: #8a8378;
+  --line: #d9cfb8;
+  --kin: #b8975a;
+  --mincho: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --gothic: "Zen Kaku Gothic New", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: var(--gothic);
+  color: var(--sumi);
+  background-color: var(--kinari);
+  /* 青海波の薄い地紋 */
+  background-image:
+    radial-gradient(circle at 50% 100%, transparent 11px, rgba(31,58,95,.055) 11px, rgba(31,58,95,.055) 12px, transparent 12px),
+    radial-gradient(circle at 0% 50%, transparent 11px, rgba(31,58,95,.055) 11px, rgba(31,58,95,.055) 12px, transparent 12px),
+    radial-gradient(circle at 100% 50%, transparent 11px, rgba(31,58,95,.055) 11px, rgba(31,58,95,.055) 12px, transparent 12px);
+  background-size: 28px 14px;
+  min-height: 100vh;
+}
+button { font-family: inherit; color: inherit; cursor: pointer; }
+.app { max-width: 520px; margin: 0 auto; min-height: 100vh; padding-bottom: 48px; }
+
+/* ヘッダー */
+.head {
+  background: var(--ai);
+  color: var(--washi);
+  padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+  border-bottom: 3px double var(--kin);
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.head h1 { margin: 0; font-family: var(--mincho); font-size: 22px; letter-spacing: .18em; font-weight: 700; }
+.head h1 .mark { color: #f0b9a8; margin-right: 6px; letter-spacing: 0; }
+.tally { font-size: 12px; opacity: .9; white-space: nowrap; }
+.tally b { font-family: var(--mincho); font-size: 17px; margin: 0 2px; color: #f6d9a6; }
+
+.notice { margin: 10px 12px 0; padding: 7px 10px; font-size: 12px; color: #7a4a1c; background: #fbe9c8; border: 1px solid #e6c88e; border-radius: 6px; }
+
+/* 絞り込み */
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 12px 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; padding: 7px 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--washi);
+  font-size: 14px; min-height: 36px;
+}
+.chip[aria-pressed="true"] { background: var(--ai); border-color: var(--ai); color: var(--washi); }
+
+.bar { display: flex; align-items: center; gap: 10px; padding: 8px 12px 4px; }
+.tabs { display: flex; flex: 1; border: 1px solid var(--ai); border-radius: 8px; overflow: hidden; background: var(--washi); }
+.tab { flex: 1; border: 0; background: none; padding: 8px 4px; font-size: 13px; min-height: 38px; color: var(--ai); }
+.tab + .tab { border-left: 1px solid var(--ai); }
+.tab[aria-pressed="true"] { background: var(--ai); color: var(--washi); font-weight: 700; }
+.sort { flex: none; border: 1px solid var(--line); background: var(--washi); border-radius: 8px; padding: 0 8px; height: 38px; font-family: inherit; font-size: 13px; color: var(--sumi); }
+
+/* カード一覧 */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; }
+.card {
+  position: relative; text-align: center; padding: 14px 10px 12px;
+  background: var(--washi); border: 1px solid var(--line); border-radius: 6px;
+  box-shadow: 0 1px 0 #fff inset, 0 2px 6px rgba(43,38,34,.08);
+  display: block; width: 100%;
+}
+.card:active { transform: translateY(1px); }
+.window {
+  width: 100%; aspect-ratio: 1; border-radius: 50%; overflow: hidden;
+  border: 4px solid var(--ai-deep);
+  box-shadow: 0 0 0 2px var(--kin), 0 3px 8px rgba(0,0,0,.18);
+  background: #dfe6ea;
+}
+.window img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .area { margin-top: 10px; font-size: 11px; color: var(--nezu); letter-spacing: .08em; }
+.card .name { font-family: var(--mincho); font-weight: 700; font-size: 15px; line-height: 1.35; margin: 2px 0 6px; min-height: 2.7em; display: flex; align-items: center; justify-content: center; }
+.stars { color: var(--shu); letter-spacing: .1em; font-size: 14px; }
+.stars .off { color: #d8cfbd; }
+.stars.none { color: var(--nezu); font-size: 11px; letter-spacing: 0; }
+.pref-tag {
+  position: absolute; top: 8px; left: 8px; z-index: 1;
+  background: var(--ai); color: var(--washi); font-size: 11px; padding: 3px 7px; border-radius: 3px; letter-spacing: .1em;
+}
+.stamp {
+  position: absolute; top: 6px; right: 6px; z-index: 1;
+  width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--mincho); font-weight: 700; font-size: 15px;
+  transform: rotate(-10deg);
+}
+.stamp.visited { color: var(--shu); border: 2px solid var(--shu); background: rgba(251,247,236,.92); }
+.stamp.want { color: var(--ai); border: 2px dashed var(--ai); background: rgba(251,247,236,.92); font-size: 11px; }
+.empty { grid-column: 1 / -1; text-align: center; color: var(--nezu); padding: 48px 16px; font-size: 14px; line-height: 1.8; }
+
+/* 詳細 */
+.detail { display: none; }
+body.show-detail .list { display: none; }
+body.show-detail .detail { display: block; }
+.back { border: 0; background: none; color: var(--washi); font-size: 14px; padding: 6px 0; min-height: 36px; }
+.hero { padding: 22px 56px 6px; text-align: center; }
+.hero .window { border-width: 7px; box-shadow: 0 0 0 3px var(--kin), 0 6px 18px rgba(0,0,0,.22); }
+.title { text-align: center; padding: 10px 16px 4px; }
+.title .area { font-size: 12px; color: var(--nezu); letter-spacing: .12em; }
+.title h2 { font-family: var(--mincho); font-size: 24px; margin: 4px 0 8px; letter-spacing: .06em; }
+.tags { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 12px; padding: 3px 9px; border-radius: 3px; border: 1px solid var(--ai); color: var(--ai); background: var(--washi); }
+.tag.pref { background: var(--ai); color: var(--washi); }
+
+.panel { margin: 14px 12px 0; background: var(--washi); border: 1px solid var(--line); border-radius: 6px; padding: 14px; }
+.panel h3 {
+  margin: 0 0 10px; font-family: var(--mincho); font-size: 15px; letter-spacing: .14em; color: var(--ai);
+  display: flex; align-items: center; gap: 8px;
+}
+.panel h3::before { content: ""; width: 4px; height: 16px; background: var(--shu); border-radius: 1px; }
+.status-btns { display: flex; gap: 8px; }
+.status-btn { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 14px; }
+.status-btn.visited[aria-pressed="true"] { background: var(--shu); border-color: var(--shu); color: #fff; font-weight: 700; }
+.status-btn.want[aria-pressed="true"] { background: var(--ai); border-color: var(--ai); color: #fff; font-weight: 700; }
+.rate { display: flex; align-items: center; gap: 2px; margin: 12px 0 4px; }
+.rate button { border: 0; background: none; font-size: 32px; line-height: 1; padding: 4px 3px; color: #d8cfbd; }
+.rate button.on { color: var(--shu); }
+.rate .clear { font-size: 12px; color: var(--nezu); margin-left: auto; padding: 8px; text-decoration: underline; }
+.field { display: block; margin-top: 10px; font-size: 12px; color: var(--nezu); }
+.field input, .field textarea {
+  display: block; width: 100%; margin-top: 4px; padding: 10px;
+  border: 1px solid var(--line); border-radius: 6px; background: #fff;
+  font-family: inherit; font-size: 16px; color: var(--sumi);
+}
+.field textarea { min-height: 110px; resize: vertical; line-height: 1.7; }
+.saved { font-size: 11px; color: var(--nezu); text-align: right; margin-top: 6px; min-height: 1.3em; }
+
+.info { margin: 0; }
+.info div { display: grid; grid-template-columns: 5.2em 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 14px; line-height: 1.6; }
+.info div:last-child { border-bottom: 0; }
+.info dt { color: var(--ai); font-family: var(--mincho); font-weight: 700; }
+.info dd { margin: 0; overflow-wrap: anywhere; }
+.info a { color: var(--ai); text-underline-offset: 3px; }
+.caution { margin: 14px 12px 0; padding: 10px 12px; font-size: 13px; line-height: 1.7; color: #7a2a1c; background: #fbe6df; border: 1px solid #e9b9ab; border-radius: 6px; }
+.memo { margin: 0 0 10px; font-size: 13px; line-height: 1.7; color: #5a5348; }
+.general { display: block; font-size: 11px; color: var(--nezu); }
+.window { position: relative; }
+.window.noimg::after { content: "♨"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 44px; color: var(--ai); opacity: .35; }
+.window.noimg img { display: none; }
+.foot { padding: 4px 16px 0; font-size: 11px; line-height: 1.8; color: var(--nezu); }
+
+/* 下のナビ */
+.app { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+.nav { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--ai-deep); border-top: 3px double var(--kin); padding-bottom: env(safe-area-inset-bottom); }
+.nav-in { max-width: 520px; margin: 0 auto; display: flex; }
+.nav a { flex: 1; text-align: center; padding: 10px 4px 9px; color: #b9c4d3; text-decoration: none; font-size: 12px; letter-spacing: .1em; }
+.nav a b { display: block; font-size: 19px; line-height: 1.2; font-weight: 400; }
+.nav a[aria-current="page"] { color: #f6d9a6; }
+body.show-detail .nav { display: none; }
+
+/* 制覇状況 */
+.conquest { display: none; }
+body.show-map .list { display: none; }
+body.show-map .conquest { display: block; }
+.score { display: flex; gap: 10px; margin: 14px 12px 0; }
+.score div { flex: 1; text-align: center; background: var(--washi); border: 1px solid var(--line); border-radius: 6px; padding: 12px 6px 10px; font-size: 12px; color: var(--nezu); }
+.score b { display: block; font-family: var(--mincho); font-size: 30px; line-height: 1.2; color: var(--shu); }
+.score b small { font-size: 14px; color: var(--sumi); margin-left: 2px; }
+.mapbox { margin: 12px 12px 0; background: var(--washi); border: 1px solid var(--line); border-radius: 6px; padding: 8px 8px 4px; }
+.mapbox svg { display: block; width: 100%; height: auto; max-height: 62vh; }
+.mapbox path { stroke: var(--ai-deep); stroke-width: .8; stroke-linejoin: round; cursor: pointer; }
+.mapbox .p-none path { fill: #e6dfce; }
+.mapbox .p-want path { fill: #b7c6d8; }
+.mapbox .p-visited path { fill: var(--shu); }
+.mapbox text { font-family: var(--mincho); font-weight: 700; font-size: 12px; text-anchor: middle; pointer-events: none; fill: var(--sumi); paint-order: stroke; stroke: var(--washi); stroke-width: 3px; }
+.mapbox text.cnt { font-family: var(--gothic); font-weight: 500; font-size: 9.5px; }
+.legend { display: flex; justify-content: center; gap: 14px; font-size: 11px; color: var(--nezu); padding: 4px 0 6px; }
+.legend i { display: inline-block; width: 11px; height: 11px; border: 1px solid var(--ai-deep); border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.prefrows { margin: 12px 12px 0; background: var(--washi); border: 1px solid var(--line); border-radius: 6px; padding: 4px 14px; }
+.prefrow { display: grid; grid-template-columns: 4em 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 11px 0; border: 0; border-bottom: 1px dashed var(--line); background: none; font-size: 14px; text-align: left; }
+.prefrow:last-child { border-bottom: 0; }
+.prefrow .pn { font-family: var(--mincho); font-weight: 700; color: var(--ai); }
+.prefrow .meter { height: 8px; background: #e6dfce; border-radius: 4px; overflow: hidden; }
+.prefrow .meter i { display: block; height: 100%; background: var(--shu); }
+.prefrow .num { font-size: 12px; color: var(--nezu); white-space: nowrap; }
+.credit { padding: 10px 16px 0; font-size: 10px; color: var(--nezu); text-align: right; }
+.mapsearch { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 8px 12px 0; font-size: 12px; color: var(--nezu); }
+.mapsearch a { color: var(--ai); background: var(--washi); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; text-decoration: none; }
+.mapsearch a::before { content: "📍"; margin-right: 3px; }
+
+/* 写真 */
+.album { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.album button { position: relative; padding: 0; border: 0; border-radius: 4px; overflow: hidden; aspect-ratio: 1; background: #e6dfce; }
+.album img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.album .is-cover::after { content: "丸窓"; position: absolute; left: 4px; bottom: 4px; font-size: 10px; padding: 1px 5px; border-radius: 3px; background: var(--shu); color: #fff; }
+.addphoto { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 10px; min-height: 44px; border: 1px dashed var(--ai); border-radius: 8px; color: var(--ai); font-size: 14px; cursor: pointer; background: #fff; }
+.addphoto input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.photo-note { margin: 8px 0 0; font-size: 11px; line-height: 1.6; color: var(--nezu); }
+.viewer { position: fixed; inset: 0; z-index: 20; background: rgba(21,42,69,.96); display: none; flex-direction: column; }
+.viewer.open { display: flex; }
+.viewer .stage { flex: 1; display: grid; place-items: center; padding: 12px; min-height: 0; }
+.viewer .stage img { max-width: 100%; max-height: 100%; object-fit: contain; border: 3px solid var(--washi); }
+.viewer .vbar { display: flex; gap: 8px; padding: 10px 12px calc(12px + env(safe-area-inset-bottom)); max-width: 520px; width: 100%; margin: 0 auto; }
+.viewer .vbar button { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid var(--kin); background: transparent; color: var(--washi); font-size: 14px; }
+.viewer .vbar .del { border-color: #e9b9ab; color: #f3c4b8; }
+.viewer .vbar .use { background: var(--shu); border-color: var(--shu); color: #fff; }
+.checked { font-size: 11px; color: var(--nezu); text-align: right; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 一覧 -->
+  <section class="list">
+    <header class="head">
+      <h1><span class="mark">♨</span>温泉手帖</h1>
+      <div class="tally" id="tally"></div>
+    </header>
+    <div class="notice" id="notice" hidden>試作版です。掲載している3件は見た目確認用の仮データです。</div>
+    <div class="chips" id="chips"></div>
+    <div class="bar">
+      <div class="tabs" id="tabs">
+        <button class="tab" data-status="all">すべて</button>
+        <button class="tab" data-status="visited">行った</button>
+        <button class="tab" data-status="want">行きたい</button>
+      </div>
+      <select class="sort" id="sort" aria-label="並べ替え">
+        <option value="pref">県順</option>
+        <option value="rating">星評価順</option>
+        <option value="date">訪問日順</option>
+      </select>
+    </div>
+    <div class="mapsearch" id="mapsearch"></div>
+    <div class="grid" id="grid"></div>
+    <p class="foot">営業時間・料金・定休日は <span id="checked-date"></span> に観光情報サイトなどで調べたものです。変わることがあるので、お出かけ前に各施設へご確認ください。絵はすべてイメージです。</p>
+  </section>
+
+  <!-- 制覇状況 -->
+  <section class="conquest">
+    <header class="head">
+      <h1><span class="mark">♨</span>制覇状況</h1>
+      <div class="tally">九州七県</div>
+    </header>
+    <div class="score" id="score"></div>
+    <div class="mapbox"><div id="map"></div>
+      <div class="legend"><span><i style="background:#c8452e"></i>行った</span><span><i style="background:#b7c6d8"></i>行きたい</span><span><i style="background:#e6dfce"></i>まだ</span></div>
+    </div>
+    <div class="prefrows" id="prefrows"></div>
+    <p class="credit">地図の出典：地球地図日本（国土地理院）</p>
+  </section>
+
+  <!-- 詳細 -->
+  <section class="detail">
+    <header class="head">
+      <button class="back" id="back">‹ 一覧へ</button>
+      <div class="tally">♨ 温泉手帖</div>
+    </header>
+    <div id="detail"></div>
+  </section>
+
+</div>
+
+<div class="viewer" id="viewer" aria-hidden="true">
+  <div class="stage"><img id="viewer-img" alt=""></div>
+  <div class="vbar">
+    <button class="use" id="v-cover">丸窓に使う</button>
+    <button class="del" id="v-del">削除</button>
+    <button id="v-close">閉じる</button>
+  </div>
+</div>
+
+<nav class="nav"><div class="nav-in">
+  <a href="#" id="nav-list"><b>♨</b>一覧</a>
+  <a href="#/map" id="nav-map"><b>◉</b>制覇状況</a>
+</div></nav>
+
+<script src="data.js"></script>
+<script src="map.js"></script>
+<script>
+(function () {
+  "use strict";
+  var DATA = window.ONSEN_DATA || [];
+  var PREFS = window.ONSEN_PREFS || [];
+  var DEMO = window.ONSEN_DEMO_RECORDS || {};
+  var MAP = window.KYUSHU_MAP || null;
+  // 県名ラベルの位置（輪郭の重心だと海に落ちる県があるので手で指定）
+  var LABEL = { "福岡": [207, 138], "佐賀": [150, 167], "長崎": [128, 206], "熊本": [221, 250], "大分": [285, 198], "宮崎": [283, 298], "鹿児島": [180, 368] };
+  // 泉質別の一般的な適応症（浴用）。施設ごとの効能が分からないときの目安として表示する。
+  var GENERAL = [
+    [/二酸化炭素|炭酸泉/, "きりきず、末梢循環障害、冷え性、自律神経不安定症"],
+    [/酸性/, "アトピー性皮膚炎、尋常性乾癬、表皮化膿症、耐糖能異常"],
+    [/硫黄/, "アトピー性皮膚炎、尋常性乾癬、慢性湿疹、表皮化膿症"],
+    [/塩化物|硫酸塩/, "きりきず、末梢循環障害、冷え性、うつ状態、皮膚乾燥症"],
+    [/炭酸水素塩/, "きりきず、末梢循環障害、冷え性、皮膚乾燥症"],
+    [/単純温泉/, "自律神経不安定症、不眠症、うつ状態"]
+  ];
+  function generalEffects(spring) {
+    for (var i = 0; i < GENERAL.length; i++) if (GENERAL[i][0].test(spring || "")) return GENERAL[i][1];
+    return "";
+  }
+  function imgHtml(o) {
+    var src = coverUrl(o) || o.image;
+    return '<div class="window"><img src="' + esc(src) + '" alt="" loading="lazy" onerror="this.parentNode.className+=\' noimg\'"></div>';
+  }
+  var KEY = "onsen-techo-records-v1";
+
+  // ---- 自分の記録（このブラウザ内に保存） ----
+  var records = load();
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) { /* 保存領域が使えない環境 */ }
+    return JSON.parse(JSON.stringify(DEMO));
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(records)); return true; }
+    catch (e) { return false; }
+  }
+  function rec(id) {
+    return records[id] || { status: "", rating: 0, date: "", review: "" };
+  }
+  function update(id, patch) {
+    var r = rec(id);
+    for (var k in patch) r[k] = patch[k];
+    records[id] = r;
+    return save();
+  }
+
+  var view = { pref: "すべて", status: "all", sort: "pref" };
+
+  // ---- 自分の写真（このブラウザの IndexedDB に保存。サーバーには送らない） ----
+  var Photos = (function () {
+    var db = null, ready = false, failed = false;
+    var byOnsen = {};   // onsenId -> [{id, added}]（古い順）
+    var thumbUrl = {};  // photoId -> object URL
+    function reqP(r) { return new Promise(function (ok, ng) { r.onsuccess = function () { ok(r.result); }; r.onerror = function () { ng(r.error); }; }); }
+    function store(mode) { return db.transaction("photos", mode).objectStore("photos"); }
+    function index(p) {
+      (byOnsen[p.onsenId] = byOnsen[p.onsenId] || []).push({ id: p.id, added: p.added });
+      thumbUrl[p.id] = URL.createObjectURL(p.thumb);
+    }
+    function open() {
+      return new Promise(function (ok) {
+        try {
+          var r = indexedDB.open("onsen-techo", 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore("photos", { keyPath: "id" }); };
+          r.onsuccess = function () { db = r.result; ok(); };
+          r.onerror = function () { failed = true; ok(); };
+        } catch (e) { failed = true; ok(); }
+      }).then(function () {
+        if (failed) return;
+        return reqP(store("readonly").getAll()).then(function (all) {
+          all.sort(function (a, b) { return a.added < b.added ? -1 : 1; }).forEach(index);
+          ready = true;
+        });
+      }).catch(function () { failed = true; });
+    }
+    // 長い辺を max px に縮めて JPEG にする（撮影場所などの埋め込み情報もここで落ちる）
+    function shrink(file, max, q) {
+      return new Promise(function (ok, ng) {
+        var url = URL.createObjectURL(file), img = new Image();
+        img.onload = function () {
+          var k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+          var c = document.createElement("canvas");
+          c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          URL.revokeObjectURL(url);
+          c.toBlob(function (b) { b ? ok(b) : ng(new Error("変換に失敗しました")); }, "image/jpeg", q);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); ng(new Error("この形式の画像は読み込めませんでした")); };
+        img.src = url;
+      });
+    }
+    function add(onsenId, file) {
+      if (!ready) return Promise.reject(new Error("この環境では写真を保存できません"));
+      if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
+      return Promise.all([shrink(file, 1600, 0.85), shrink(file, 720, 0.8)]).then(function (b) {
+        var p = { id: "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), onsenId: onsenId, full: b[0], thumb: b[1], added: new Date().toISOString() };
+        return reqP(store("readwrite").put(p)).then(function () { index(p); return p.id; });
+      });
+    }
+    function remove(onsenId, photoId) {
+      return reqP(store("readwrite").delete(photoId)).then(function () {
+        byOnsen[onsenId] = (byOnsen[onsenId] || []).filter(function (x) { return x.id !== photoId; });
+        if (thumbUrl[photoId]) { URL.revokeObjectURL(thumbUrl[photoId]); delete thumbUrl[photoId]; }
+      });
+    }
+    function full(photoId) {
+      return reqP(store("readonly").get(photoId)).then(function (p) { return p ? URL.createObjectURL(p.full) : ""; });
+    }
+    return {
+      open: open, add: add, remove: remove, full: full,
+      ok: function () { return ready; },
+      list: function (onsenId) { return byOnsen[onsenId] || []; },
+      thumb: function (photoId) { return thumbUrl[photoId] || ""; }
+    };
+  })();
+  // 丸窓に使う写真（選んだもの → なければ最初に追加したもの）
+  function coverUrl(o) {
+    var list = Photos.list(o.id); if (!list.length) return "";
+    var want = rec(o.id).cover;
+    var hit = list.filter(function (x) { return x.id === want; })[0] || list[0];
+    return Photos.thumb(hit.id);
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function starsHtml(n) {
+    if (!n) return '<div class="stars none">未評価</div>';
+    var s = "";
+    for (var i = 1; i <= 5; i++) s += i <= n ? "★" : '<span class="off">★</span>';
+    return '<div class="stars" aria-label="星' + n + 'つ">' + s + "</div>";
+  }
+  function stampHtml(status) {
+    if (status === "visited") return '<span class="stamp visited" title="行った">済</span>';
+    if (status === "want") return '<span class="stamp want" title="行きたい">行き<br>たい</span>';
+    return "";
+  }
+
+  // ---- 一覧 ----
+  function renderChips() {
+    var html = ["すべて"].concat(PREFS).map(function (p) {
+      return '<button class="chip" data-pref="' + esc(p) + '" aria-pressed="' + (view.pref === p) + '">' + esc(p) + "</button>";
+    }).join("");
+    document.getElementById("chips").innerHTML = html;
+  }
+  function renderTally() {
+    var prefs = {}, count = 0;
+    DATA.forEach(function (o) {
+      if (rec(o.id).status === "visited") { prefs[o.pref] = 1; count++; }
+    });
+    document.getElementById("tally").innerHTML =
+      "<b>" + Object.keys(prefs).length + "</b>/" + PREFS.length + "県　<b>" + count + "</b>湯";
+  }
+  function mapsUrl(q) { return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q); }
+  function renderMapSearch() {
+    var where = view.pref === "すべて" ? "九州" : view.pref + "県";
+    document.getElementById("mapsearch").innerHTML = "<span>Googleマップで" + esc(where) + "を探す</span>" +
+      '<a href="' + esc(mapsUrl(where + " 日帰り温泉")) + '" target="_blank" rel="noopener">日帰り温泉</a>' +
+      '<a href="' + esc(mapsUrl(where + " 家族風呂")) + '" target="_blank" rel="noopener">家族風呂</a>';
+  }
+  function renderList() {
+    renderChips();
+    renderMapSearch();
+    renderTally();
+    [].forEach.call(document.querySelectorAll("#tabs .tab"), function (t) {
+      t.setAttribute("aria-pressed", String(t.dataset.status === view.status));
+    });
+    var items = DATA.filter(function (o) {
+      if (view.pref !== "すべて" && o.pref !== view.pref) return false;
+      if (view.status !== "all" && rec(o.id).status !== view.status) return false;
+      return true;
+    });
+    var prefOrder = function (o) { var i = PREFS.indexOf(o.pref); return i < 0 ? 99 : i; };
+    items.sort(function (a, b) {
+      if (view.sort === "rating") {
+        var d = (rec(b.id).rating || 0) - (rec(a.id).rating || 0);
+        if (d) return d;
+      } else if (view.sort === "date") {
+        var da = rec(a.id).date || "", db = rec(b.id).date || "";
+        if (da !== db) return da < db ? 1 : -1; // 新しい順・未訪問は後ろ
+      }
+      return prefOrder(a) - prefOrder(b) || DATA.indexOf(a) - DATA.indexOf(b);
+    });
+    var grid = document.getElementById("grid");
+    if (!items.length) {
+      grid.innerHTML = '<div class="empty">♨<br>この条件の温泉はまだありません</div>';
+      return;
+    }
+    grid.innerHTML = items.map(function (o) {
+      var r = rec(o.id);
+      return '<button class="card" data-id="' + esc(o.id) + '">' +
+        '<span class="pref-tag">' + esc(o.pref) + "</span>" + stampHtml(r.status) +
+        imgHtml(o) +
+        '<div class="area">' + esc(o.area) + "</div>" +
+        '<div class="name">' + esc(o.name) + "</div>" +
+        starsHtml(r.rating) +
+        "</button>";
+    }).join("");
+  }
+
+  // ---- 詳細 ----
+  function infoRow(label, html) {
+    return html ? "<div><dt>" + label + "</dt><dd>" + html + "</dd></div>" : "";
+  }
+  function renderDetail(id) {
+    var o = DATA.filter(function (x) { return x.id === id; })[0];
+    if (!o) { location.hash = ""; return; }
+    var r = rec(id);
+    var mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(o.name + " " + o.address);
+    var telDigits = String(o.tel || "").replace(/[^0-9+]/g, "");
+    var rate = "";
+    for (var i = 1; i <= 5; i++) {
+      rate += '<button data-rate="' + i + '" class="' + (i <= r.rating ? "on" : "") + '" aria-label="星' + i + 'つ">★</button>';
+    }
+    document.getElementById("detail").innerHTML =
+      '<div class="hero">' + imgHtml(o) + '</div>' +
+      '<div class="title"><div class="area">' + esc(o.area) + "</div><h2>" + esc(o.name) + "</h2>" +
+        '<div class="tags"><span class="tag pref">' + esc(o.pref) + "</span>" +
+        (o.stay || []).map(function (s) { return '<span class="tag">' + esc(s) + "</span>"; }).join("") +
+      "</div></div>" +
+
+      (o.note && /休館/.test(o.note) ? '<div class="caution">' + esc(o.note) + "</div>" : "") +
+      '<div class="panel"><h3>わたしの記録</h3>' +
+        '<div class="status-btns">' +
+          '<button class="status-btn visited" data-set="visited" aria-pressed="' + (r.status === "visited") + '">行った</button>' +
+          '<button class="status-btn want" data-set="want" aria-pressed="' + (r.status === "want") + '">行きたい</button>' +
+        "</div>" +
+        '<div class="rate">' + rate + '<button class="clear" data-rate="0">評価を消す</button></div>' +
+        '<label class="field">訪問日<input type="date" id="f-date" value="' + esc(r.date) + '"></label>' +
+        '<label class="field">感想<textarea id="f-review" placeholder="湯ざわり、景色、また行きたいか…">' + esc(r.review) + "</textarea></label>" +
+        '<div class="saved" id="saved"></div>' +
+      "</div>" +
+      albumHtml(o) +
+
+      '<div class="panel"><h3>基本情報</h3>' + (o.note && !/休館/.test(o.note) ? '<p class="memo">' + esc(o.note) + "</p>" : "") + '<dl class="info">' +
+        infoRow("住所", esc(o.address) + ' <a href="' + esc(mapUrl) + '" target="_blank" rel="noopener">地図</a>') +
+        infoRow("電話", telDigits ? '<a href="tel:' + esc(telDigits) + '">' + esc(o.tel) + "</a>" : "") +
+        infoRow("営業時間", esc(o.hours)) +
+        infoRow("定休日", esc(o.closed)) +
+        infoRow("入浴料", esc(o.fee)) +
+        infoRow("泉質", esc(o.spring)) +
+        infoRow("効能", o.effects ? esc(o.effects)
+          : (generalEffects(o.spring) ? esc(generalEffects(o.spring)) + '<span class="general">※ 泉質別の一般的な適応症（目安）</span>' : "")) +
+      "</dl>" +
+      (o.checked ? '<div class="checked">情報確認日：' + esc(o.checked) + "</div>" : "") +
+      "</div>";
+    document.getElementById("detail").dataset.id = id;
+  }
+  function albumHtml(o) {
+    var list = Photos.list(o.id), cover = coverUrl(o);
+    var grid = list.map(function (x) {
+      var u = Photos.thumb(x.id);
+      return '<button data-photo="' + esc(x.id) + '"' + (u === cover ? ' class="is-cover"' : "") + '><img src="' + esc(u) + '" alt=""></button>';
+    }).join("");
+    return '<div class="panel"><h3>わたしの写真' + (list.length ? "（" + list.length + "枚）" : "") + "</h3>" +
+      (grid ? '<div class="album">' + grid + "</div>" : "") +
+      (Photos.ok()
+        ? '<label class="addphoto">＋ 写真を追加<input type="file" id="f-photo" accept="image/*" multiple></label>' +
+          '<p class="photo-note" id="photo-msg">写真はこのスマホの中だけに保存されます（公開されません）。最初の1枚が丸窓に表示されます。</p>'
+        : '<p class="photo-note">この環境では写真を保存できません。スマホのブラウザで開いてください。</p>') +
+      "</div>";
+  }
+  function flashSaved(ok) {
+    var el = document.getElementById("saved");
+    if (el) el.textContent = ok ? "保存しました" : "この環境では保存できません";
+  }
+
+  // ---- 制覇状況 ----
+  function prefStats() {
+    var st = {};
+    PREFS.forEach(function (p) { st[p] = { total: 0, visited: 0, want: 0 }; });
+    DATA.forEach(function (o) {
+      var s = st[o.pref]; if (!s) return;
+      s.total++;
+      var r = rec(o.id).status;
+      if (r === "visited") s.visited++; else if (r === "want") s.want++;
+    });
+    return st;
+  }
+  function renderMap() {
+    var st = prefStats(), prefsDone = 0, baths = 0;
+    PREFS.forEach(function (p) { if (st[p].visited) prefsDone++; baths += st[p].visited; });
+    document.getElementById("score").innerHTML =
+      "<div><b>" + prefsDone + "<small>/" + PREFS.length + "県</small></b>制覇した県</div>" +
+      "<div><b>" + baths + "<small>/" + DATA.length + "湯</small></b>入った温泉</div>";
+    if (MAP) {
+      var svg = '<svg viewBox="' + MAP.viewBox + '" role="img" aria-label="九州の制覇状況">';
+      PREFS.forEach(function (p) {
+        var m = MAP.prefs[p]; if (!m) return;
+        var cls = st[p].visited ? "p-visited" : st[p].want ? "p-want" : "p-none";
+        svg += '<g class="' + cls + '" data-pref="' + esc(p) + '"><path d="' + m.d + '"/></g>';
+      });
+      PREFS.forEach(function (p) {
+        var l = LABEL[p]; if (!l || !MAP.prefs[p]) return;
+        svg += '<text x="' + l[0] + '" y="' + l[1] + '">' + esc(p) + "</text>" +
+               '<text class="cnt" x="' + l[0] + '" y="' + (l[1] + 12) + '">' + st[p].visited + "/" + st[p].total + "</text>";
+      });
+      document.getElementById("map").innerHTML = svg + "</svg>";
+    }
+    document.getElementById("prefrows").innerHTML = PREFS.map(function (p) {
+      var s = st[p], pct = s.total ? Math.round(s.visited / s.total * 100) : 0;
+      return '<button class="prefrow" data-pref="' + esc(p) + '"><span class="pn">' + esc(p) + "</span>" +
+        '<span class="meter"><i style="width:' + pct + '%"></i></span>' +
+        '<span class="num">' + s.visited + "/" + s.total + "湯 ›</span></button>";
+    }).join("");
+  }
+  function goPref(e) {
+    var g = e.target.closest("[data-pref]"); if (!g) return;
+    view.pref = g.dataset.pref; view.status = "all";
+    location.hash = "";
+  }
+  document.getElementById("map").addEventListener("click", goPref);
+  document.getElementById("prefrows").addEventListener("click", goPref);
+
+  // ---- 画面の切り替え（戻るボタン対応） ----
+  var listScroll = 0;
+  function route() {
+    var m = location.hash.match(/^#\/o\/(.+)$/);
+    var isMap = location.hash === "#/map";
+    document.body.classList.toggle("show-detail", !!m);
+    document.body.classList.toggle("show-map", isMap);
+    document.getElementById("nav-list").setAttribute("aria-current", isMap ? "false" : "page");
+    document.getElementById("nav-map").setAttribute("aria-current", isMap ? "page" : "false");
+    if (m) {
+      renderDetail(decodeURIComponent(m[1]));
+      window.scrollTo(0, 0);
+    } else if (isMap) {
+      renderMap();
+      window.scrollTo(0, 0);
+    } else {
+      renderList();
+      window.scrollTo(0, listScroll);
+    }
+  }
+
+  // ---- 操作 ----
+  document.getElementById("chips").addEventListener("click", function (e) {
+    var b = e.target.closest(".chip"); if (!b) return;
+    view.pref = b.dataset.pref; renderList();
+  });
+  document.getElementById("tabs").addEventListener("click", function (e) {
+    var b = e.target.closest(".tab"); if (!b) return;
+    view.status = b.dataset.status; renderList();
+  });
+  document.getElementById("sort").addEventListener("change", function (e) {
+    view.sort = e.target.value; renderList();
+  });
+  document.getElementById("grid").addEventListener("click", function (e) {
+    var c = e.target.closest(".card"); if (!c) return;
+    listScroll = window.pageYOffset || 0;
+    location.hash = "#/o/" + encodeURIComponent(c.dataset.id);
+  });
+  document.getElementById("back").addEventListener("click", function () { location.hash = ""; });
+  document.getElementById("checked-date").textContent = window.ONSEN_CHECKED || "";
+
+  var detailEl = document.getElementById("detail");
+  detailEl.addEventListener("click", function (e) {
+    var id = detailEl.dataset.id;
+    var sb = e.target.closest("[data-set]");
+    if (sb) {
+      var cur = rec(id).status;
+      var ok = update(id, { status: cur === sb.dataset.set ? "" : sb.dataset.set });
+      keepText(id); renderDetail(id); flashSaved(ok); return;
+    }
+    var rb = e.target.closest("[data-rate]");
+    if (rb) {
+      var ok2 = update(id, { rating: Number(rb.dataset.rate) });
+      keepText(id); renderDetail(id); flashSaved(ok2);
+    }
+  });
+  // 入力途中の文字を、再描画の前に記録へ反映しておく
+  function keepText(id) {
+    var d = document.getElementById("f-date"), t = document.getElementById("f-review");
+    if (d && t) update(id, { date: d.value, review: t.value });
+  }
+  detailEl.addEventListener("change", function (e) {
+    if (e.target.id !== "f-photo") return;
+    var id = detailEl.dataset.id, files = [].slice.call(e.target.files || []);
+    if (!files.length) return;
+    var msg = document.getElementById("photo-msg");
+    if (msg) msg.textContent = files.length + "枚を保存しています…";
+    keepText(id);
+    files.reduce(function (pr, f) { return pr.then(function () { return Photos.add(id, f); }); }, Promise.resolve())
+      .then(function () { renderDetail(id); })
+      .catch(function (err) { renderDetail(id); var m = document.getElementById("photo-msg"); if (m) m.textContent = "保存できませんでした：" + err.message; });
+  });
+  var viewer = document.getElementById("viewer"), vImg = document.getElementById("viewer-img"), vCur = null;
+  function closeViewer() {
+    viewer.classList.remove("open"); viewer.setAttribute("aria-hidden", "true");
+    if (vImg.src.indexOf("blob:") === 0) URL.revokeObjectURL(vImg.src);
+    vImg.removeAttribute("src"); vCur = null;
+  }
+  detailEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-photo]"); if (!b) return;
+    vCur = { onsen: detailEl.dataset.id, photo: b.dataset.photo };
+    vImg.src = Photos.thumb(vCur.photo);
+    viewer.classList.add("open"); viewer.setAttribute("aria-hidden", "false");
+    Photos.full(vCur.photo).then(function (u) { if (u && vCur) vImg.src = u; });
+  });
+  document.getElementById("v-close").addEventListener("click", closeViewer);
+  document.getElementById("v-cover").addEventListener("click", function () {
+    if (!vCur) return;
+    keepText(vCur.onsen); update(vCur.onsen, { cover: vCur.photo });
+    var id = vCur.onsen; closeViewer(); renderDetail(id);
+  });
+  document.getElementById("v-del").addEventListener("click", function () {
+    if (!vCur || !confirm("この写真を削除しますか？（元に戻せません）")) return;
+    var c = vCur; keepText(c.onsen);
+    Photos.remove(c.onsen, c.photo).then(function () {
+      if (rec(c.onsen).cover === c.photo) update(c.onsen, { cover: "" });
+      closeViewer(); renderDetail(c.onsen);
+    });
+  });
+  window.addEventListener("hashchange", closeViewer);
+
+  detailEl.addEventListener("input", function (e) {
+    if (e.target.id === "f-date" || e.target.id === "f-review") {
+      var id = detailEl.dataset.id;
+      flashSaved(update(id, { date: document.getElementById("f-date").value, review: document.getElementById("f-review").value }));
+    }
+  });
+
+  if (DATA.some(function (o) { return /^sample-/.test(o.id); })) {
+    document.getElementById("notice").hidden = false;
+  }
+  window.addEventListener("hashchange", route);
+  route();
+  Photos.open().then(function () { if (!document.body.classList.contains("show-map")) { keepTextIfDetail(); route(); } });
+  function keepTextIfDetail() { var id = detailEl.dataset.id; if (id && document.body.classList.contains("show-detail")) keepText(id); }
+})();
+</script>
+</body>
+</html>
